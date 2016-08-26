@@ -53,6 +53,7 @@ set background=dark
 set t_Co=256
 colorscheme molokai
 
+set encoding=utf-8
 set backupdir=~/.tmp
 set directory=~/.tmp
 set tags=./tags;
@@ -105,7 +106,9 @@ set splitright
 " Filetype stuff
 " ================
 au BufRead,BufNewFile *.jsx set filetype=javascript.jsx
-autocmd FileType ruby,eruby,jade,yaml,markdown set ai sw=2 sts=2 et
+au BufRead,BufNewFile *.conf setf dosini
+au BufRead,BufNewFile Thorfile set filetype=ruby
+autocmd FileType ruby,eruby,jade,yaml,markdown,conf set ai sw=2 sts=2 et
 autocmd FileType vim,tex,yaml,markdown let b:autoformat_blacklist=1
 
 "formatting stuff for vim-jsbeautify
