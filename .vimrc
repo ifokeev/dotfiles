@@ -5,15 +5,20 @@ let mapleader = "\<Space>"
 
 call plug#begin('~/.vim/plugged')
 
+Plug 'ctrlpvim/ctrlp.vim'
+" vim-tmux navigation between panes
+Plug 'christoomey/vim-tmux-navigator'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'junegunn/vim-easy-align'
 " Plug 'maksimr/vim-jsbeautify'
-Plug 'ifokeev/vim-autoformat'
+Plug 'sbdchd/neoformat'
+" Plug 'ifokeev/vim-autoformat'
 Plug 'tomtom/tcomment_vim'
 Plug 'tpope/vim-surround'
 Plug 'jiangmiao/auto-pairs'
 Plug 'ervandew/supertab'
 
+" xyntax
 Plug 'vim-ruby/vim-ruby'
 Plug 'tpope/vim-rails'
 Plug 'digitaltoad/vim-jade'
@@ -22,10 +27,12 @@ Plug 'othree/es.next.syntax.vim'
 Plug 'mxw/vim-jsx'
 "
 " <--------- themes
-Plug 'altercation/vim-colors-solarized'
-Plug 'tomasr/molokai'
-Plug 'vim-airline/vim-airline' 
-Plug 'vim-airline/vim-airline-themes'
+" Plug 'altercation/vim-colors-solarized'
+" Plug 'dracula/vim'
+Plug 'nanotech/jellybeans.vim'
+" Plug 'tomasr/molokai'
+" Plug 'vim-airline/vim-airline' 
+" Plug 'vim-airline/vim-airline-themes'
 " -----------> 
 
 " pretty window resizer
@@ -43,6 +50,10 @@ Plug 'xolox/vim-easytags'
 
 " move selected lines
 Plug 'matze/vim-move'
+
+Plug 'neomake/neomake'
+Plug 'jaawerth/neomake-local-eslint-first'
+
 "
 call plug#end()
 
@@ -51,11 +62,11 @@ syntax on
 
 set background=dark
 set t_Co=256
-colorscheme molokai
+colorscheme jellybeans
 
 set encoding=utf-8
-set backupdir=~/.tmp
-set directory=~/.tmp
+set backupdir=~/.tmp,/tmp
+set directory=~/.tmp,/tmp
 set tags=./tags;
 set path=./
 set noswapfile
@@ -79,6 +90,7 @@ set smartcase
 set relativenumber 
 
 set autochdir
+set statusline+=%F
 set laststatus=2
 
 set wrap linebreak nolist
@@ -111,14 +123,10 @@ au BufRead,BufNewFile Thorfile set filetype=ruby
 autocmd FileType ruby,eruby,jade,yaml,markdown,conf set ai sw=2 sts=2 et
 autocmd FileType vim,tex,yaml,markdown let b:autoformat_blacklist=1
 
-"formatting stuff for vim-jsbeautify
-" autocmd FileType json noremap <buffer> gg=G :call JsonBeautify()<cr>
-" autocmd FileType javascript.jsx,jsx,jsx.js noremap <buffer> gg=G :call JsxBeautify()<cr>
-" autocmd FileType html noremap <buffer> gg=G :call HtmlBeautify()<cr>
-" autocmd FileType css noremap <buffer> gg=G :call CSSBeautify()<cr>
-" autocmd FileType javascript noremap <buffer>  gg=G :call JsBeautify()<cr>
-" ================
-"
+" autocmd! FileType javascript, BufWritePost * Neomake
+
+autocmd! BufWritePost * Neomake
+
 " <-------- nerdtree stuff
 augroup nerdtree_autocmd
   autocmd!
@@ -126,23 +134,55 @@ augroup nerdtree_autocmd
 augroup END
 " --------------> 
 
+" neoformat options
+" Enable alignment
+let g:neoformat_basic_format_align = 1
+
+" Enable tab to spaces conversion
+let g:neoformat_basic_format_retab = 1
+
+" Enable trimmming of trailing whitespace
+let g:neoformat_basic_format_trim = 1
+
+let g:neoformat_javascript_prettydiff = {
+        \ 'exe': 'prettydiff',
+        \ 'args': ['mode:"beautify"',
+                 \ 'styleguide:"yandex"',
+                 \ 'lang:"javascript"',
+                 \ 'readmethod:"filescreen"',
+                 \ 'endquietly:"quiet"',
+                 \ 'source:"%:p"'],
+        \ 'no_append': 1
+        \ }
+
+let g:neoformat_enabled_javascript = ['prettydiff']
+" let g:neoformat_enabled_jsx = ['jsbeautify']
+" let g:neoformat_enabled_jsx = ['js-beautify']
+
+let g:neoformat_verbose = 1 " only affects the verbosity of Neoformat
+
+function! ESLintFix()
+  execute "!" . b:neomake_javascript_eslint_exe . " --fix %:p" 
+  edit! %
+  Neomake
+endfunction
+
+nnoremap <leader>el :call ESLintFix()<CR>
+
 " autoformat debug
-let g:autoformat_verbosemode=1
-let g:formatters_javascript = [
-            \ 'jsbeautify_javascript',
-            \ 'jscs'
-            \ ]
-let g:formatters_jsx = g:formatters_javascript
-let g:formatters_javascript_jsx = g:formatters_jsx
-" molokai theme
-let g:molokai_original=1
-let g:rehash256=1
+" let g:autoformat_verbosemode=1
+" let g:formatters_javascript = [
+"             \ 'jsbeautify_javascript',
+"             \ 'jscs'
+"             \ ]
+" let g:formatters_jsx = g:formatters_javascript
+" let g:formatters_javascript_jsx = g:formatters_jsx
+
 " truecolor nvim
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 " nerdtree
 let NERDTreeChDirMode=2
-" ruby path if you are using RVM
-let g:ruby_path = system('rvm current')
+"
 " Intent private methods
 let g:ruby_indent_access_modifier_style = 'outdent'
 
@@ -155,11 +195,15 @@ let g:easytags_auto_highlight = 0
 " move key
 let g:move_key_modifier = 'C'
 
+" ctrlP ignore
+let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
 
+" Enable JSX Syntax Highlighing in javascript files
+let g:jsx_ext_required = 0 
 "<!--------------- mappings -----------> 
 
 " autoformat please
-noremap <expr> <F2> !exists('b:autoformat_blacklist') ? ':Autoformat<CR>' : 'gg=G'
+noremap <expr> <F2> !exists('b:autoformat_blacklist') ? ':Neoformat<CR>' : 'gg=G'
 " Remove highlights with leader + enter
 nmap <Leader><CR> :nohlsearch<cr>
 
@@ -189,10 +233,10 @@ vno v <esc>
 nnoremap <CR> O<Esc>
 
 " Easy window navigation
-nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
+" nnoremap <C-h> <C-w>h
+" nnoremap <C-j> <C-w>j
+" nnoremap <C-k> <C-w>k
+" nnoremap <C-l> <C-w>l
 
 nnoremap ; :
 
