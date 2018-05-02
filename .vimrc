@@ -54,6 +54,8 @@ Plug 'matze/vim-move'
 Plug 'neomake/neomake'
 Plug 'jaawerth/neomake-local-eslint-first'
 
+Plug 'tpope/vim-fugitive'
+
 "
 call plug#end()
 
@@ -191,6 +193,7 @@ let g:ruby_indent_access_modifier_style = 'outdent'
 let g:easytags_dynamic_files = 1
 let g:easytags_events = ['BufWritePost']
 let g:easytags_auto_highlight = 0
+let g:easytags_async = 1
 
 " move key
 let g:move_key_modifier = 'C'
